@@ -123,7 +123,7 @@ Body:
 ```json id="9xxy1k"
 {
   "username": "admin",
-  "password": "sigitilham"
+  "password": "admin123"
 }
 ```
 
@@ -132,7 +132,7 @@ Response:
 ```json id="9f4dr3"
 {
   "access": "admin",
-  "refresh": "sigitilham"
+  "refresh": "admin123"
 }
 ```
 
