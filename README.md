@@ -1,173 +1,110 @@
 # Simple LMS (Learning Management System)
 
-Project ini adalah backend sederhana untuk sistem LMS menggunakan **Django**, **Django REST Framework**, dan **Docker**.
+Project ini adalah backend sistem LMS yang dibangun menggunakan **Django**, **Django Ninja**, **PostgreSQL**, dan **Docker**. Project ini mencakup pemodelan data tingkat lanjut, optimasi query, dan sistem autentikasi JWT dengan Role-Based Access Control (RBAC).
 
 ---
 
-## Fitur Utama
+## 🎯 Fitur & Capaian Project
 
-* API Course (Kursus)
-* API Lesson (Materi)
-* API Enrollment (Pendaftaran)
-* Authentication menggunakan JWT
-* Dockerized (mudah dijalankan)
+### 1. Data Modeling & Optimization (Progress 2)
+* **Skema Database**: Implementasi relasi yang tepat antara User, Category (self-referencing), Course, Lesson, Enrollment, dan Progress.
+* **Optimasi Query**: Penggunaan `select_related` dan `prefetch_related` untuk mengatasi masalah N+1.
+* **Custom Managers**: Implementasi `Course.objects.for_listing()` dan `Enrollment.objects.for_student_dashboard()`.
+* **Django Admin**: Konfigurasi antarmuka admin yang informatif dengan fitur search, filter, dan inline models.
 
----
-
-## Teknologi
-
-* Python
-* Django
-* Django REST Framework
-* JWT Authentication
-* Docker & Docker Compose
+### 2. REST API & Authentication (Progress 3)
+* **Django Ninja**: Framework API berbasis Type Hints yang cepat dan efisien.
+* **JWT Authentication**: Secure login menggunakan `django-ninja-jwt`.
+* **RBAC (Role-Based Access Control)**: Permission sistem menggunakan decorator `@is_instructor`, `@is_admin`, dan `@is_student`.
+* **Swagger Documentation**: Dokumentasi API interaktif yang tersedia secara otomatis.
 
 ---
 
-## Screenshot
+## 🛠️ Teknologi
 
-### 1. Docker & Container Berjalan
-
-![Docker](Screenshot 2026-03-29 205957.png)
-
-### 2. Server Django Berjalan
-
-![Server](Screenshot 2026-03-29 205643.png)
-
-### 3. Project Structure
-
-![Structure](Screenshot 2026-03-29 210102.png)
-
-### 4. Django Login
-
-![JWT](Screenshot 2026-03-29 210131.png)
-
-### 5. Install Django
-
-![Install](Screenshot 2026-03-29 205652.png)
+* **Backend**: Python 3.11, Django 5.2+
+* **API Framework**: Django Ninja, Pydantic
+* **Database**: PostgreSQL (Production-ready) & SQLite (Local testing)
+* **Authentication**: JWT (JSON Web Token)
+* **Containerization**: Docker & Docker Compose
 
 ---
 
-## Struktur Project
+## 📸 Screenshots
 
-```id="tqcbpg"
+### 1. API Documentation (Swagger UI)
+![Swagger UI](images/Screenshot 2026-04-24 171431.png)
+
+### 2. Django Admin - Course Management
+![Admin Courses](images/Screenshot 2026-04-24 171442.png)
+
+### 3. JWT Authentication & Endpoints
+![API Testing](images/Screenshot 2026-04-24 171453.png)
+
+*(Screenshots lama dapat dilihat di folder `images/`)*
+
+---
+
+## 📁 Struktur Project
+
+```text
 simple-lms/
 │
-├── config/              # Konfigurasi utama Django
-├── courses/             # App LMS (Course, Lesson, Enrollment)
+├── config/              # Konfigurasi utama Django & API Entry Point
+├── courses/             # App LMS (Course, Lesson, Enrollment, Progress)
+│   ├── api.py           # Endpoint API Courses
+│   ├── schemas.py       # Pydantic Schemas
+│   └── permissions.py   # RBAC Decorators
+├── users/               # App User (Custom User Model & Auth)
+│   ├── api.py           # Endpoint API Auth
+│   └── schemas.py       # Pydantic Schemas
+├── images/              # Dokumentasi screenshot
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-├── .env
-├── screenshots/         # Folder gambar
+├── .env                 # Konfigurasi environment
 └── README.md
 ```
 
 ---
 
-## Cara Menjalankan Project
+## 🚀 Cara Menjalankan Project
 
-### 1. Clone Repository
-
-```bash id="e6p0u1"
+### 1. Persiapan
+```bash
 git clone https://github.com/Sigit02825/simple-lms.git
 cd simple-lms
 ```
 
----
-
-### 2. Jalankan Docker
-
-```bash id="c5f7zv"
+### 2. Jalankan dengan Docker
+```bash
 docker compose up --build
 ```
 
----
-
-### 3. Jalankan Migration
-
-```bash id="dnx7ml"
+### 3. Setup Database & Data Awal
+```bash
+# Jalankan migrasi
 docker compose exec web python manage.py migrate
+
+# Isi data dummy (Users, Courses, Lessons)
+docker compose exec web python seed_db.py
 ```
 
 ---
 
-### 4. Buat Superuser
+## 🔗 Endpoint Utama
 
-```bash id="g1l0dn"
-docker compose exec web python manage.py createsuperuser
-```
-
----
-
-### 5. Akses Aplikasi
-
-* Admin Panel:
-  http://localhost:8000/admin/
-
-* API Root:
-  http://localhost:8000/api/
+* **API Documentation (Swagger)**: `http://localhost:8000/api/docs`
+* **Admin Panel**: `http://localhost:8000/admin/`
+* **Auth Endpoints**:
+    * Login (Get Token): `POST /api/token/pair`
+    * Register: `POST /api/auth/register`
+    * My Profile: `GET /api/auth/me`
 
 ---
 
-## Authentication (JWT)
+## 👤 Author
 
-### Login
-
-```http id="lgp3t5"
-POST /api/token/
-```
-
-Body:
-
-```json id="9xxy1k"
-{
-  "username": "admin",
-  "password": "admin123"
-}
-```
-
-Response:
-
-```json id="9f4dr3"
-{
-  "access": "admin",
-  "refresh": "admin123"
-}
-```
-
----
-
-### Gunakan Token
-
-Tambahkan header:
-
-```id="a6gm3w"
-Authorization: Bearer <access_token>
-```
-
----
-
-## Endpoint API
-
-* `/api/courses/`
-* `/api/lessons/`
-* `/api/enrollments/`
-
----
-
-## Testing API
-
-Gunakan:
-
-* Postman
-* Thunder Client (VS Code)
-
----
-
-## Author
-
-Nama: Sigit Ilham
-Project: Simple LMS - Docker & Django Foundation
-
----
+**Nama**: Sigit Ilham
+**Project**: Tugas Besar Simple LMS - Server Side Programming
+**Status**: Completed (Progress 1, 2, & 3)
