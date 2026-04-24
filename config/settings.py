@@ -45,7 +45,6 @@ INSTALLED_APPS = [
 
     'courses',
     'users',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -135,14 +134,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-from datetime import timedelta  
+from datetime import timedelta
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}  
-
-SIMPLE_JWT = {
+NINJA_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
+

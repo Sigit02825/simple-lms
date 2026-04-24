@@ -1,5 +1,6 @@
 Django>=4.2
 psycopg2-binary
 python-dotenv
-djangorestframework
-djangorestframework-simplejwt
+django-ninja
+django-ninja-jwt
+pydantic[email]
