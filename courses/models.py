@@ -1,84 +1,102 @@
 from django.db import models
 from django.conf import settings
 
-class Category(models.Model):
-    name = models.CharField(max_length=100)
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subcategories')
-
-    class Meta:
-        verbose_name_plural = 'categories'
+class Course(models.Model):
+    name = models.CharField("nama matkul", max_length=100)
+    description = models.TextField("deskripsi", default='-')
+    price = models.IntegerField("harga", default=10000)
+    image = models.ImageField("gambar", null=True, blank=True)
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="pengajar",
+        on_delete=models.RESTRICT
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
-class CourseQuerySet(models.QuerySet):
-    def for_listing(self):
-        return self.select_related('instructor', 'category').prefetch_related('lessons')
+    class Meta:
+        verbose_name = "Mata Kuliah"
+        verbose_name_plural = "Mata Kuliah"
 
-class CourseManager(models.Manager):
-    def get_queryset(self):
-        return CourseQuerySet(self.model, using=self._db)
-    
-    def for_listing(self):
-        return self.get_queryset().for_listing()
+ROLE_OPTIONS = [
+    ('std', "Siswa"),
+    ('ast', "Asisten"),
+]
 
-class Course(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='instructed_courses')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='courses')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = CourseManager()
+class CourseMember(models.Model):
+    course_id = models.ForeignKey(
+        Course,
+        verbose_name="matkul",
+        on_delete=models.RESTRICT
+    )
+    user_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="siswa",
+        on_delete=models.RESTRICT
+    )
+    roles = models.CharField(
+        "peran",
+        max_length=3,
+        choices=ROLE_OPTIONS,
+        default='std'
+    )
 
     def __str__(self):
-        return self.title
-
-class Lesson(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    order = models.PositiveIntegerField()
+        return f"{self.user_id} - {self.course_id} ({self.roles})"
 
     class Meta:
-        ordering = ['order']
+        verbose_name = "Anggota Kelas"
+        verbose_name_plural = "Anggota Kelas"
+
+class CourseContent(models.Model):
+    name = models.CharField("judul konten", max_length=200)
+    description = models.TextField("deskripsi", default='-')
+    video_url = models.CharField(
+        'URL Video',
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    file_attachment = models.FileField("File", null=True, blank=True)
+    course_id = models.ForeignKey(
+        Course,
+        verbose_name="matkul",
+        on_delete=models.RESTRICT
+    )
+    parent_id = models.ForeignKey(
+        "self",
+        verbose_name="induk",
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
-        return f"{self.course.title} - {self.title}"
-
-class EnrollmentQuerySet(models.QuerySet):
-    def for_student_dashboard(self):
-        # Optimized for student dashboard with related course, instructor and prefetching progress
-        return self.select_related('course', 'course__instructor', 'course__category').prefetch_related('progress', 'course__lessons')
-
-class EnrollmentManager(models.Manager):
-    def get_queryset(self):
-        return EnrollmentQuerySet(self.model, using=self._db)
-    
-    def for_student_dashboard(self):
-        return self.get_queryset().for_student_dashboard()
-
-class Enrollment(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
-    enrolled_at = models.DateTimeField(auto_now_add=True)
-
-    objects = EnrollmentManager()
+        return self.name
 
     class Meta:
-        unique_together = ('user', 'course')
+        verbose_name = "Konten Kelas"
+        verbose_name_plural = "Konten Kelas"
+
+class Comment(models.Model):
+    content_id = models.ForeignKey(
+        CourseContent,
+        verbose_name="konten",
+        on_delete=models.CASCADE
+    )
+    member_id = models.ForeignKey(
+        CourseMember,
+        verbose_name="pengguna",
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField('komentar')
 
     def __str__(self):
-        return f"{self.user.username} - {self.course.title}"
-
-class Progress(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, related_name='progress')
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-    completed_at = models.DateTimeField(auto_now_add=True)
+        return f"Komentar oleh {self.member_id} pada {self.content_id}"
 
     class Meta:
-        unique_together = ('enrollment', 'lesson')
-        verbose_name_plural = 'progresses'
-
-    def __str__(self):
-        return f"{self.enrollment.user.username} - {self.lesson.title} (Completed)"
+        verbose_name = "Komentar"
+        verbose_name_plural = "Komentar"

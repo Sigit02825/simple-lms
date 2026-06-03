@@ -1,62 +1,69 @@
 import os
 import django
-import random
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from users.models import User
-from courses.models import Category, Course, Lesson, Enrollment, Progress
+from courses.models import Course, CourseMember, CourseContent, Comment
 
 def seed_data():
     # Clear existing data
-    Progress.objects.all().delete()
-    Enrollment.objects.all().delete()
-    Lesson.objects.all().delete()
+    Comment.objects.all().delete()
+    CourseContent.objects.all().delete()
+    CourseMember.objects.all().delete()
     Course.objects.all().delete()
-    Category.objects.all().delete()
     User.objects.exclude(is_superuser=True).delete()
-    User.objects.filter(username='admin').delete()
 
     # Create Users
-    admin = User.objects.create_superuser('admin', 'admin@example.com', 'admin123', role='admin')
+    admin = User.objects.filter(is_superuser=True).first()
+    if not admin:
+        admin = User.objects.create_superuser('admin', 'admin@example.com', 'admin123', role='admin')
+    
     instructor = User.objects.create_user('instructor1', 'instructor1@example.com', 'pass123', role='instructor')
     student = User.objects.create_user('student1', 'student1@example.com', 'pass123', role='student')
 
-    # Create Categories
-    programming = Category.objects.create(name='Programming')
-    python_cat = Category.objects.create(name='Python', parent=programming)
-    web_dev = Category.objects.create(name='Web Development', parent=programming)
-
     # Create Courses
     course1 = Course.objects.create(
-        title='Django for Beginners',
-        description='Learn Django from scratch',
-        instructor=instructor,
-        category=python_cat
+        name='Pemrograman Web dengan Django',
+        description='Belajar membuat aplikasi web dengan framework Django',
+        price=50000,
+        teacher=instructor
     )
     
     course2 = Course.objects.create(
-        title='Advanced React',
-        description='Deep dive into React',
-        instructor=instructor,
-        category=web_dev
+        name='Docker untuk Pemula',
+        description='Belajar containerization menggunakan Docker',
+        price=75000,
+        teacher=instructor
     )
 
-    # Create Lessons
-    for i in range(1, 6):
-        Lesson.objects.create(course=course1, title=f'Django Lesson {i}', content=f'Content {i}', order=i)
-        Lesson.objects.create(course=course2, title=f'React Lesson {i}', content=f'Content {i}', order=i)
+    # Course Members
+    CourseMember.objects.create(course_id=course1, user_id=student, roles='std')
+    CourseMember.objects.create(course_id=course2, user_id=student, roles='std')
 
-    # Enrollments
-    enrollment = Enrollment.objects.create(user=student, course=course1)
+    # Course Contents
+    content1 = CourseContent.objects.create(
+        name='Pengenalan Django',
+        description='Apa itu Django?',
+        course_id=course1
+    )
     
-    # Progress
-    lessons = course1.lessons.all()
-    for lesson in lessons[:3]: # Complete 3 lessons
-        Progress.objects.create(enrollment=enrollment, lesson=lesson)
+    content2 = CourseContent.objects.create(
+        name='Instalasi Django',
+        description='Cara menginstall Django di lokal',
+        course_id=course1,
+        parent_id=content1
+    )
 
-    print("Data seeded successfully!")
+    # Comments
+    Comment.objects.create(
+        content_id=content1,
+        member_id=CourseMember.objects.get(course_id=course1, user_id=student),
+        comment='Sangat membantu!'
+    )
+
+    print("Data seeded successfully according to Chapter 4!")
 
 if __name__ == '__main__':
     seed_data()

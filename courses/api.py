@@ -1,77 +1,45 @@
 from typing import List
 from django.shortcuts import get_object_or_404
-from ninja import Router, Query
-from ninja.errors import HttpError
-from ninja_jwt.authentication import JWTAuth
-from .models import Course, Category, Enrollment, Lesson, Progress
-from .schemas import (
-    CourseSchema, CourseCreateSchema, CourseUpdateSchema, 
-    EnrollmentSchema, ProgressSchema, LessonSchema
-)
-from .permissions import is_instructor, is_admin, is_student
+from ninja import Router
+from .models import Course, CourseContent
+from .schemas import CourseIn, CourseOut, DetailCourseOut, CourseContentIn, CourseContentOut
 from ninja.pagination import paginate
 
 router = Router()
 
-# PUBLIC ENDPOINTS
-@router.get("/", response=List[CourseSchema], tags=["Courses"])
+@router.get("/", response=List[CourseOut], tags=["Courses"])
 @paginate
-def list_courses(request, category_id: int = None):
-    qs = Course.objects.for_listing()
-    if category_id:
-        qs = qs.filter(category_id=category_id)
-    return qs
+def list_courses(request):
+    return Course.objects.select_related('teacher').all()
 
-@router.get("/{course_id}", response=CourseSchema, tags=["Courses"])
+@router.get("/{course_id}", response=DetailCourseOut, tags=["Courses"])
 def get_course(request, course_id: int):
-    return get_object_or_404(Course.objects.for_listing(), id=course_id)
+    return get_object_or_404(Course.objects.prefetch_related('coursecontent_set'), id=course_id)
 
-# PROTECTED ENDPOINTS (Instructor)
-@router.post("/", auth=JWTAuth(), response={201: CourseSchema}, tags=["Courses"])
-@is_instructor
-def create_course(request, data: CourseCreateSchema):
+@router.post("/", response={201: CourseOut}, tags=["Courses"])
+def create_course(request, data: CourseIn):
+    # For now, we'll assign the first user as teacher if not authenticated
+    # In a real app, this would be request.auth
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    teacher = User.objects.first() 
+    
     course = Course.objects.create(
-        instructor=request.auth,
-        **data.dict(exclude_none=True)
+        teacher=teacher,
+        **data.dict()
     )
     return 201, course
 
-@router.patch("/{course_id}", auth=JWTAuth(), response=CourseSchema, tags=["Courses"])
-@is_instructor
-def update_course(request, course_id: int, data: CourseUpdateSchema):
+@router.patch("/{course_id}", response=CourseOut, tags=["Courses"])
+def update_course(request, course_id: int, data: CourseIn):
     course = get_object_or_404(Course, id=course_id)
-    if course.instructor != request.auth and request.auth.role != 'admin':
-        raise HttpError(403, "Forbidden: You are not the owner of this course")
-    
-    for attr, value in data.dict(exclude_none=True).items():
+    for attr, value in data.dict(exclude_unset=True).items():
         setattr(course, attr, value)
     course.save()
     return course
 
-@router.delete("/{course_id}", auth=JWTAuth(), response={204: None}, tags=["Courses"])
-@is_admin
+@router.delete("/{course_id}", response={204: None}, tags=["Courses"])
 def delete_course(request, course_id: int):
     course = get_object_or_404(Course, id=course_id)
     course.delete()
     return 204, None
-
-# ENROLLMENTS
-@router.post("/enrollments", auth=JWTAuth(), response={201: EnrollmentSchema}, tags=["Enrollments"])
-@is_student
-def enroll_course(request, course_id: int):
-    course = get_object_or_404(Course, id=course_id)
-    enrollment, created = Enrollment.objects.get_or_create(user=request.auth, course=course)
-    return 201, enrollment
-
-@router.get("/enrollments/my-courses", auth=JWTAuth(), response=List[EnrollmentSchema], tags=["Enrollments"])
-@is_student
-def my_courses(request):
-    return Enrollment.objects.for_student_dashboard().filter(user=request.auth)
-
-@router.post("/enrollments/{enrollment_id}/progress", auth=JWTAuth(), response={201: ProgressSchema}, tags=["Enrollments"])
-@is_student
-def mark_lesson_complete(request, enrollment_id: int, lesson_id: int):
-    enrollment = get_object_or_404(Enrollment, id=enrollment_id, user=request.auth)
-    lesson = get_object_or_404(Lesson, id=lesson_id, course=enrollment.course)
-    progress, created = Progress.objects.get_or_create(enrollment=enrollment, lesson=lesson)
-    return 201, progress

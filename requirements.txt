@@ -1,6 +1,9 @@
-Django>=4.2
-psycopg2-binary
+Django<5.1
+psycopg2-binary==2.9.9
 python-dotenv
-django-ninja
+django-ninja==1.1
 django-ninja-jwt
 pydantic[email]
+django-silk==5.0.3
+Pillow==10.2.0
+gunicorn

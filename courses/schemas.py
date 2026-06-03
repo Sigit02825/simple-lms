@@ -1,43 +1,52 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from ninja import Schema, Field
 from datetime import datetime
+from typing import Optional, List
 from users.schemas import UserSchema
 
-class CategorySchema(BaseModel):
+class UserOut(Schema):
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+
+class CourseIn(Schema):
+    name: str
+    description: str = '-'
+    price: int = 10000
+
+class CourseOut(Schema):
+    id: int
+    name: str
+    description: str
+    price: int
+    image: Optional[str] = None
+    teacher: UserOut
+    created_at: datetime
+    updated_at: datetime
+
+class ContentTitleOut(Schema):
     id: int
     name: str
 
-class LessonSchema(BaseModel):
-    id: int
-    title: str
-    content: str
-    order: int
+class DetailCourseOut(CourseOut):
+    contents: List[ContentTitleOut] = Field(
+        ..., alias="coursecontent_set"
+    )
 
-class CourseSchema(BaseModel):
+class CourseContentIn(Schema):
+    name: str
+    description: str = '-'
+    video_url: Optional[str] = None
+    course_id: int
+    parent_id: Optional[int] = None
+
+class CourseContentOut(Schema):
     id: int
-    title: str
+    name: str
     description: str
-    instructor: UserSchema
-    category: Optional[CategorySchema] = None
-    created_at: datetime
-
-class CourseCreateSchema(BaseModel):
-    title: str
-    description: str
-    category_id: Optional[int] = None
-
-class CourseUpdateSchema(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    category_id: Optional[int] = None
-
-class EnrollmentSchema(BaseModel):
-    id: int
-    user: UserSchema
-    course: CourseSchema
-    enrolled_at: datetime
-
-class ProgressSchema(BaseModel):
-    id: int
-    lesson: LessonSchema
-    completed_at: datetime
+    video_url: Optional[str] = None
+    course_id: int
+    parent_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
