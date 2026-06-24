@@ -6,6 +6,8 @@ class Course(models.Model):
     description = models.TextField("deskripsi", default='-')
     price = models.IntegerField("harga", default=10000)
     image = models.ImageField("gambar", null=True, blank=True)
+    enrollment_count = models.PositiveIntegerField(default=0)
+    completion_count = models.PositiveIntegerField(default=0)
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="pengajar",
@@ -20,6 +22,9 @@ class Course(models.Model):
     class Meta:
         verbose_name = "Mata Kuliah"
         verbose_name_plural = "Mata Kuliah"
+        indexes = [
+            models.Index(fields=['name'], name='idx_course_name'),
+        ]
 
 ROLE_OPTIONS = [
     ('std', "Siswa"),
@@ -43,13 +48,25 @@ class CourseMember(models.Model):
         choices=ROLE_OPTIONS,
         default='std'
     )
+    completed_at = models.DateTimeField(null=True, blank=True)
+    certificate_path = models.CharField(max_length=255, blank=True, default='')
 
     def __str__(self):
         return f"{self.user_id} - {self.course_id} ({self.roles})"
 
+    @property
+    def is_completed(self):
+        return self.completed_at is not None
+
     class Meta:
         verbose_name = "Anggota Kelas"
         verbose_name_plural = "Anggota Kelas"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['course_id', 'user_id'],
+                name='unique_course_member'
+            )
+        ]
 
 class CourseContent(models.Model):
     name = models.CharField("judul konten", max_length=200)

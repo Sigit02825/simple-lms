@@ -1,5 +1,6 @@
 import os
 import django
+from django.utils import timezone
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
@@ -40,7 +41,12 @@ def seed_data():
 
     # Course Members
     CourseMember.objects.create(course_id=course1, user_id=student, roles='std')
-    CourseMember.objects.create(course_id=course2, user_id=student, roles='std')
+    CourseMember.objects.create(
+        course_id=course2,
+        user_id=student,
+        roles='std',
+        completed_at=timezone.now(),
+    )
 
     # Course Contents
     content1 = CourseContent.objects.create(
@@ -63,7 +69,14 @@ def seed_data():
         comment='Sangat membantu!'
     )
 
-    print("Data seeded successfully according to Chapter 4!")
+    course1.enrollment_count = CourseMember.objects.filter(course_id=course1).count()
+    course1.completion_count = CourseMember.objects.filter(course_id=course1, completed_at__isnull=False).count()
+    course1.save(update_fields=['enrollment_count', 'completion_count'])
+    course2.enrollment_count = CourseMember.objects.filter(course_id=course2).count()
+    course2.completion_count = CourseMember.objects.filter(course_id=course2, completed_at__isnull=False).count()
+    course2.save(update_fields=['enrollment_count', 'completion_count'])
+
+    print("Data seeded successfully according to Progress 4!")
 
 if __name__ == '__main__':
     seed_data()

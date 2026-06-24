@@ -143,3 +143,36 @@ NINJA_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_CACHE_URL', 'redis://redis:6379/1'),
+    }
+}
+
+CACHE_TTL_COURSE_LIST = int(os.getenv('CACHE_TTL_COURSE_LIST', '300'))
+CACHE_TTL_COURSE_DETAIL = int(os.getenv('CACHE_TTL_COURSE_DETAIL', '300'))
+RATE_LIMIT_REQUESTS = int(os.getenv('RATE_LIMIT_REQUESTS', '60'))
+RATE_LIMIT_WINDOW = int(os.getenv('RATE_LIMIT_WINDOW', '60'))
+
+MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://mongodb:27017/')
+MONGODB_DB_NAME = os.getenv('MONGODB_DB_NAME', 'simple_lms_logs')
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'amqp://guest:guest@rabbitmq:5672//')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://redis:6379/2')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    'update-course-statistics-every-5-minutes': {
+        'task': 'courses.tasks.update_course_statistics',
+        'schedule': timedelta(minutes=5),
+    },
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@simplelms.local')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
