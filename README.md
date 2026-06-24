@@ -31,7 +31,7 @@ Backend Learning Management System berbasis **Django**, **Django Ninja**, **Post
 | Progress 1 | `da3a3eb` | Initial commit simple LMS with Docker |
 | Progress 2 | `f9f42d8` | Data models, admin optimization, dan query demo |
 | Progress 3 | `cf6b03c` | REST API dengan Django Ninja, JWT, dan RBAC |
-| Progress 4 | `PENDING_UPDATE` | Redis, MongoDB, Celery, RabbitMQ, Flower, dan dokumentasi |
+| Progress 4 | `1e934fa` | Redis, MongoDB, Celery, RabbitMQ, Flower, dan dokumentasi |
 
 ## Teknologi
 - Python 3.11
