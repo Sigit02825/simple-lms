@@ -69,10 +69,13 @@ def get_weather(city):
 
 ## 3. Hasil Testing
 
+### Screenshot Hasil Testing
+![Hasil Testing Redis Caching](images/python%20test_cache.py.png)
+
 ### First call (tidak ada cache)
 ```
 First call to get_weather('Jakarta')...
-First call time: 2.01s
+First call time: 2.03s
 ```
 
 ### Second call (cache sudah ada)
@@ -84,7 +87,7 @@ Second call time: 0.00s
 ### Perbandingan
 - First call: ~2 detik (karena `time.sleep(2)`)
 - Second call: ~0 detik (langsung dari Redis)
-- **Percepatan: ~200x lebih cepat!**
+- **Percepatan: 3160.8x lebih cepat!**
 
 ---
 
