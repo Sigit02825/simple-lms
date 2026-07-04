@@ -26,12 +26,12 @@ Backend Learning Management System berbasis **Django**, **Django Ninja**, **Post
 - Export report async, enrollment email, certificate generation, dan scheduled statistics update.
 
 ## Assignment Commits
-| Progress | Commit | Keterangan |
+| Progress/Chapter | Commit | Keterangan |
 |---|---|---|
 | Progress 1 | `da3a3eb` | Initial commit simple LMS with Docker |
 | Progress 2 | `f9f42d8` | Data models, admin optimization, dan query demo |
 | Progress 3 | `cf6b03c` | REST API dengan Django Ninja, JWT, dan RBAC |
-| Progress 4 | `1e934fa` | Redis, MongoDB, Celery, RabbitMQ, Flower, dan dokumentasi |
+| Progress 4 / Chapter 12 & 13 | `1e934fa` | Redis, MongoDB, Celery, RabbitMQ, Flower, dan dokumentasi |
 | Redis Caching Exercise | `c94c616` | Implementasi caching weather API dengan Redis |
 
 ## Teknologi
@@ -94,6 +94,23 @@ flowchart LR
 - Cache invalidation saat create, update, delete, enroll, dan complete.
 - MongoDB activity log dan learning analytics.
 - Celery async task dan periodic task.
+
+### Chapter 12: MongoDB
+- Activity log collection (`activity_logs`)
+- Learning analytics collection (`learning_analytics`)
+- Aggregation queries untuk summary activity course
+- Logging setiap aktivitas pengguna
+
+### Chapter 13: Message Brokers
+- RabbitMQ sebagai message broker
+- Celery worker untuk async task
+- Celery Beat untuk periodic task
+- Flower monitoring UI
+- Async tasks:
+  - `send_enrollment_email`
+  - `generate_certificate`
+  - `update_course_statistics` (periodic)
+  - `export_course_report`
 
 ## Caching Strategy
 ### Redis Keys
