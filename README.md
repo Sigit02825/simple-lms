@@ -32,6 +32,7 @@ Backend Learning Management System berbasis **Django**, **Django Ninja**, **Post
 | Progress 2 | `f9f42d8` | Data models, admin optimization, dan query demo |
 | Progress 3 | `cf6b03c` | REST API dengan Django Ninja, JWT, dan RBAC |
 | Progress 4 | `1e934fa` | Redis, MongoDB, Celery, RabbitMQ, Flower, dan dokumentasi |
+| Redis Caching Exercise | `[COMMIT_HASH]` | Implementasi caching weather API dengan Redis |
 
 ## Teknologi
 - Python 3.11
